@@ -43,7 +43,11 @@ public class CustomExtension implements IExtension {
                 "USDT_TRON",
                 "USDT-TRON",
                 "USDTTTRX",   // algunos setups raros
-                "USDTTRX"
+                "USDTTRX",
+                "USDT.TRC20",
+                "USDTTRC20",
+                "USDT_TRC20",
+                "USDT-TRC20"
         ));
     }
 

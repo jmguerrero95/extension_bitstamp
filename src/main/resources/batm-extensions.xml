@@ -8,6 +8,10 @@
       <cryptocurrency>USDTTRON</cryptocurrency>   <!-- otras builds (2T) -->
       <cryptocurrency>USDT_TRON</cryptocurrency>
       <cryptocurrency>USDT-TRON</cryptocurrency>
+      <cryptocurrency>USDT.TRC20</cryptocurrency>
+      <cryptocurrency>USDTTRC20</cryptocurrency>
+      <cryptocurrency>USDT_TRC20</cryptocurrency>
+      <cryptocurrency>USDT-TRC20</cryptocurrency>
       <!-- Fiat que entrega tu fuente -->
       <fiatcurrency>USD</fiatcurrency>
     </ratesource>
