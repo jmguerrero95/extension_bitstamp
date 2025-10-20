@@ -2,10 +2,11 @@ package com.generalbytes.batm.server.extensions.extra.usdtbitstamp;
 
 import com.generalbytes.batm.server.extensions.IRateSource;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.io.InputStream;
 import java.util.*;
 
 public class USDTPriceSource implements IRateSource {
@@ -13,6 +14,9 @@ public class USDTPriceSource implements IRateSource {
     private static final String DEFAULT_FIAT = "USD";
 
     private static final Map<String, String> CRYPTO_ALIASES;
+
+    private final String configuredFiat;
+    private final BigDecimal margin;
 
     static {
         Map<String, String> aliases = new HashMap<>();
@@ -30,6 +34,21 @@ public class USDTPriceSource implements IRateSource {
         CRYPTO_ALIASES = Collections.unmodifiableMap(aliases);
     }
 
+    public USDTPriceSource() {
+        this(null, BigDecimal.ZERO);
+    }
+
+    public USDTPriceSource(String fiatCurrency, BigDecimal margin) {
+        String normalizedFiat = resolveFiatOrDefault(fiatCurrency);
+        if (!DEFAULT_FIAT.equals(normalizedFiat)) {
+            System.err.println("[USDTBitstamp] Fiat configurada '" + normalizedFiat + "' no soportada, usando USD");
+            normalizedFiat = DEFAULT_FIAT;
+        }
+
+        this.configuredFiat = normalizedFiat;
+        this.margin = margin == null ? BigDecimal.ZERO : margin;
+    }
+
     @Override
     public BigDecimal getExchangeRateLast(String cryptoCurrency, String fiatCurrency) {
         final String normalizedCrypto = normalizeCrypto(cryptoCurrency);
@@ -37,8 +56,14 @@ public class USDTPriceSource implements IRateSource {
             return null;
         }
 
-        final String fiat = normalizeFiat(fiatCurrency);
-        if (!DEFAULT_FIAT.equals(fiat)) {
+        if (!DEFAULT_FIAT.equals(configuredFiat)) {
+            System.err.println("[USDTBitstamp] Fiat configurada no soportada: " + configuredFiat);
+            return null;
+        }
+
+        final String requestFiat = resolveFiatOrDefault(fiatCurrency);
+        if (!DEFAULT_FIAT.equals(requestFiat)) {
+            System.err.println("[USDTBitstamp] Fiat solicitada no soportada: " + requestFiat);
             return null;
         }
 
@@ -71,7 +96,8 @@ public class USDTPriceSource implements IRateSource {
             if (end < 0) return null;
 
             String priceStr = body.substring(start, end);
-            return new BigDecimal(priceStr);
+            BigDecimal rate = new BigDecimal(priceStr);
+            return applyMargin(rate);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -95,11 +121,25 @@ public class USDTPriceSource implements IRateSource {
         return CRYPTO_ALIASES.get(cryptoCurrency.toUpperCase(Locale.ROOT));
     }
 
-    private String normalizeFiat(String fiatCurrency) {
-        if (fiatCurrency == null || fiatCurrency.trim().isEmpty()) {
+    private String resolveFiatOrDefault(String fiatCurrency) {
+        if (fiatCurrency == null) {
             return DEFAULT_FIAT;
         }
 
-        return fiatCurrency.toUpperCase(Locale.ROOT);
+        final String trimmed = fiatCurrency.trim();
+        if (trimmed.isEmpty()) {
+            return DEFAULT_FIAT;
+        }
+
+        return trimmed.toUpperCase(Locale.ROOT);
+    }
+
+    private BigDecimal applyMargin(BigDecimal rate) {
+        if (rate == null || BigDecimal.ZERO.compareTo(margin) == 0) {
+            return rate;
+        }
+
+        BigDecimal multiplier = BigDecimal.ONE.add(margin);
+        return rate.multiply(multiplier).setScale(8, RoundingMode.HALF_UP);
     }
 }

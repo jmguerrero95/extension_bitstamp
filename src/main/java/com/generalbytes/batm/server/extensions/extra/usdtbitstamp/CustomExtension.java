@@ -12,6 +12,7 @@ import com.generalbytes.batm.server.extensions.communication.voicecall.IVoiceCal
 import com.generalbytes.batm.server.extensions.travelrule.IWalletTypeEvaluationProvider;
 import com.generalbytes.batm.server.extensions.watchlist.IWatchList;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class CustomExtension implements IExtension {
@@ -23,14 +24,47 @@ public class CustomExtension implements IExtension {
 
     @Override
     public IRateSource createRateSource(String sourceLogin) {
-        if (sourceLogin == null) return null;
-        final String sl = sourceLogin.toLowerCase(Locale.ROOT);
-        // admite "usdtbitstamp" y variantes con parámetros (p.ej. usdtbitstamp:USD)
-        if (sl.startsWith("usdtbitstamp")) {
-            System.out.println("[USDTBitstamp] createRateSource login=" + sourceLogin);
-            return new USDTPriceSource();
+        if (sourceLogin == null) {
+            return null;
         }
-        return null;
+
+        final String trimmedLogin = sourceLogin.trim();
+        if (trimmedLogin.isEmpty()) {
+            return null;
+        }
+
+        final String[] parts = trimmedLogin.split(":", -1);
+        if (parts.length == 0 || !parts[0].equalsIgnoreCase("usdtbitstamp")) {
+            return null;
+        }
+
+        String fiat = null;
+        BigDecimal margin = BigDecimal.ZERO;
+
+        if (parts.length > 1) {
+            String fiatPart = parts[1].trim();
+            if (!fiatPart.isEmpty()) {
+                fiat = fiatPart;
+            }
+        }
+
+        if (parts.length > 2) {
+            String marginPart = parts[2].trim();
+            if (marginPart.isEmpty()) {
+                marginPart = "0";
+            }
+            try {
+                margin = new BigDecimal(marginPart);
+            } catch (NumberFormatException e) {
+                System.err.println("[USDTBitstamp] Margin inválido '" + parts[2] + "', usando 0");
+            }
+        }
+
+        System.out.println("[USDTBitstamp] createRateSource login=" + sourceLogin +
+                ", fiat=" + (fiat == null ? "(default)" : fiat) +
+                ", margin=" + margin);
+
+        return new USDTPriceSource(fiat, margin);
     }
 
     // En builds recientes CAS usa esto para filtrar lo que muestra en los dropdowns
