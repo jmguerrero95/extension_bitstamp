@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+  <extension class="com.generalbytes.batm.server.extensions.extra.usdtbitstamp.CustomExtension">
+    <ratesource prefix="usdtbitstamp" name="USDT Bitstamp (Custom)">
+      <!-- Códigos de cripto que verás como compatibles en el UI -->
+      <cryptocurrency>USDT</cryptocurrency>
+      <cryptocurrency>USDTTTRON</cryptocurrency>  <!-- tu código en UI (3T) -->
+      <cryptocurrency>USDTTRON</cryptocurrency>   <!-- otras builds (2T) -->
+      <cryptocurrency>USDT_TRON</cryptocurrency>
+      <cryptocurrency>USDT-TRON</cryptocurrency>
+      <!-- Fiat que entrega tu fuente -->
+      <fiatcurrency>USD</fiatcurrency>
+    </ratesource>
+  </extension>
+</extensions>

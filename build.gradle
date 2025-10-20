@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly project(':server_extensions_api')
+    //implementation 'org.json:json:20231013'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE  // 👈 Línea clave para evitar archivos duplicados
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    from('src/main/resources') {
+        include 'batm-extensions.properties'
+    }
+}
