@@ -12,8 +12,6 @@
       <cryptocurrency>USDTTRC20</cryptocurrency>
       <cryptocurrency>USDT_TRC20</cryptocurrency>
       <cryptocurrency>USDT-TRC20</cryptocurrency>
-      <!-- Fiat que entrega tu fuente -->
-      <fiatcurrency>USD</fiatcurrency>
     </ratesource>
   </extension>
 </extensions>
